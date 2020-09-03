@@ -9,7 +9,7 @@
                     <b-nav-item>Mso1a <b-badge variant="info">1500</b-badge></b-nav-item>
                 </b-navbar-nav>
                 <b-navbar-nav class="ml-auto" >
-                    <b-nav-item href="/">Sign out</b-nav-item>
+                    <b-nav-item v-on:click="onSignOut">Sign out</b-nav-item>
                 </b-navbar-nav>
             </b-navbar>
         </div>
@@ -44,11 +44,14 @@
 
 <script>
     import common from "../common";
+    import axios from "axios";
 
     export default {
         name: "Lobby",
         data() {
             return {
+                token: "",
+                uid: 0,
                 logoImg: common.logoImgSrc,
                 recently: [
                     { Rank: '1500', Status: 'Win', Time: '5 minutes ago'},
@@ -58,12 +61,36 @@
                     { ID: 'Mso1a', Score: '11234', WinRate: '0.74'},
                     { ID: 'Mso1a', Score: '11234', WinRate: '0.74'},
                     { ID: 'Mso1a', Score: '11234', WinRate: '0.74'},
-                ]
+                ],
+            }
+        },
+        mounted() {
+            this.token = localStorage.getItem("token");
+            this.uid = localStorage.getItem("uid");
+            if (!this.token || !this.uid) {
+                this.$router.push('/login');
             }
         },
         methods: {
             findGame() {
                 this.$router.push('/game');
+            },
+            onSignOut() {
+                axios.post(
+                    common.apiUrl.signOut,
+                    {},{
+                        headers: {
+                            'x-auth-token': this.token,
+                            'x-user-id': this.uid,
+                        }
+                    }
+                ).then(() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('uid');
+                    this.$router.push('/');
+                }).catch(() => {
+                    console.log("Sign out fail.");
+                });
             }
         }
     }

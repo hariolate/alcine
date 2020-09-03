@@ -5,7 +5,7 @@
                     type="light"
                     variant="light"
                     id="nav">
-                <b-navbar-nav class="ml-auto" >
+                <b-navbar-nav class="ml-auto">
                     <b-nav-item href="#/">Home</b-nav-item>
                     <b-nav-item href="#/signup">Sign Up</b-nav-item>
                 </b-navbar-nav>
@@ -52,7 +52,7 @@
             </b-button>
         </b-form>
         <b-alert
-                show
+                v-model="fail"
                 variant="danger"
                 dismissible
                 class="alert">
@@ -63,6 +63,7 @@
 
 <script>
     import common from "../common";
+    import axios from "axios";
 
     export default {
         name: "Login",
@@ -72,13 +73,27 @@
                 form: {
                     email: '',
                     password: '',
-                }
+                },
+                fail: false,
             }
         },
         methods: {
             onSubmit(evt) {
-              evt.preventDefault();
-              this.$router.push('/lobby')
+                evt.preventDefault();
+                axios.post(common.apiUrl.login, JSON.stringify({
+                    email: this.form.email,
+                    password: this.form.password,
+                })).then((res) => {
+                    const resObj = res.data;
+                    if (resObj.data.token && resObj.data.uid) {
+                        localStorage.setItem("token", resObj.data.token);
+                        localStorage.setItem("uid", resObj.data.uid);
+                        this.fail = false;
+                        this.$router.push('/lobby');
+                    }
+                }).catch(() => {
+                    this.fail = true;
+                });
             },
         }
     }
@@ -88,10 +103,12 @@
     #nav {
         border-bottom: solid lightgray 1px;
     }
+
     #logo {
         margin-top: 2vh;
         max-height: 300px;
     }
+
     #form {
         width: 50%;
         max-width: 600px;
@@ -99,11 +116,13 @@
         transform: translateX(-50%);
         margin-top: 3vh;
     }
+
     #button {
         width: 80%;
         margin-left: 10%;
         margin-top: 1vh;
     }
+
     .alert {
         width: 50%;
         max-width: 600px;
