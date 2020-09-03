@@ -17,7 +17,9 @@
                 alt="UNO Online"
                 id="logo"
         ></b-img>
-        <b-form id="form">
+        <b-form
+                @submit="onSubmit"
+                id="form">
             <b-form-group
                     id="emailInputGroup"
                     label="Email address:"
@@ -50,14 +52,14 @@
             </b-button>
         </b-form>
         <b-alert
-                show
+                v-model="fail"
                 variant="danger"
                 dismissible
                 class="alert">
             Sign up failed.
         </b-alert>
         <b-alert
-                show
+                v-model="success"
                 variant="success"
                 dismissible
                 class="alert">
@@ -68,6 +70,7 @@
 
 <script>
     import common from "../common";
+    import axios from "axios"
 
     export default {
         name: "Signup",
@@ -77,7 +80,24 @@
                 form: {
                     email: '',
                     password: '',
-                }
+                },
+                success: false,
+                fail: false,
+            }
+        },
+        methods:{
+            onSubmit(evt) {
+                evt.preventDefault();
+                axios.post(common.apiUrl.signUp, JSON.stringify({
+                    email: this.form.email,
+                    password: this.form.password,
+                })).then(() => {
+                    this.success = true;
+                    this.fail = false;
+                }).catch(() => {
+                    this.success = false;
+                    this.fail = true;
+                });
             }
         }
     }
